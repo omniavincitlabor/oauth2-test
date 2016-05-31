@@ -1,0 +1,36 @@
+server:
+    port: 8081
+    contextPath: /uaa
+
+oauth-test:
+    users:
+        -
+            name: admin
+            password: admin
+            roles: ADMIN
+            email: admin@example.com
+        -
+            name: tester
+            password: tester
+            roles: USER
+            email: tester@example.com
+
+security:
+    user:
+        password: password
+    oauth2:
+        client:
+            clientId: acme
+            clientSecret: acmesecret
+            authorizedGrantTypes: authorization_code,refresh_token,password
+            scope: openid
+            autoApproveScopes: '.*'
+            #accessTokenValiditySeconds: 60
+            #refreshTokenValiditySeconds: 120
+    sessions: if-required
+
+
+logging:
+   level:
+        org.springframework.security: DEBUG
+        test.oauth2: DEBUG

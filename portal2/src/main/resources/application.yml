@@ -1,0 +1,35 @@
+server:
+    port: 8085
+    contextPath: /uee
+
+
+
+security:
+    user:
+        password: user
+    oauth2:
+        client:
+            accessTokenUri: http://localhost:8081/uaa/oauth/token
+            userAuthorizationUri: http://localhost:8081/uaa/oauth/authorize
+            clientId: acme
+            clientSecret: acmesecret
+            grantType: authorization_code
+            scope: openid
+        resource:
+            userInfoUri: http://localhost:8081/uaa/user
+spring:
+    aop:
+        proxy-target-class: true
+    resources:
+        chain:
+            enabled: true
+
+logging:
+   level:
+        #org.springframework.security: DEBUG
+        test.oauth2: DEBUG
+
+
+config:
+    oauth2:
+        logoutTokenUri: http://localhost:8081/uaa/oauth-logout
