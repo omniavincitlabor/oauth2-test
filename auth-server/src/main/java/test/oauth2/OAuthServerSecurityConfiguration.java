@@ -20,6 +20,7 @@ import org.springframework.boot.autoconfigure.security.oauth2.OAuth2ClientProper
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -27,6 +28,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -77,6 +81,15 @@ public class OAuthServerSecurityConfiguration extends WebSecurityConfigurerAdapt
 
     @Autowired
     private TokenStore tokenStore;
+
+    @Bean
+    @Primary
+    public OAuth2RestTemplate oauth2RestTemplate(final OAuth2ClientContext oauth2ClientContext,
+                                                 final OAuth2ProtectedResourceDetails details) {
+        OAuth2RestTemplate template = new OAuth2RestTemplate(details,
+                oauth2ClientContext);
+        return template;
+    }
 
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {

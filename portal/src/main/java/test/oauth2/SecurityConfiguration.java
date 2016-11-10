@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
@@ -30,7 +31,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
 import org.vaadin.spring.security.annotation.EnableVaadinSharedSecurity;
@@ -55,6 +58,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Value("${config.oauth2.logoutTokenUri}")
     private String logoutTokenUri;
+
+    @Bean
+    @Primary
+    public OAuth2RestTemplate oauth2RestTemplate(final OAuth2ClientContext oauth2ClientContext,
+                                                 final OAuth2ProtectedResourceDetails details) {
+        OAuth2RestTemplate template = new OAuth2RestTemplate(details,
+                oauth2ClientContext);
+        return template;
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {

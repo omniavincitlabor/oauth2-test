@@ -15,6 +15,7 @@
  */
 package test.oauth2;
 
+import org.springframework.context.ApplicationContext;
 import test.oauth2.sessionservice.SessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 /**
  * <b>Single-Sign-Out</b>
@@ -50,7 +52,7 @@ public class OAuthLogoutController {
     protected final Log logger = LogFactory.getLog(getClass());
 
     @Autowired
-    private DefaultTokenServices service;
+    private ApplicationContext context;
 
 
     private CookieClearingLogoutHandler cookieLogoutHandler = new CookieClearingLogoutHandler("JSESSIONID");
@@ -69,21 +71,27 @@ public class OAuthLogoutController {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null) {
             String tokenValue = authHeader.toLowerCase().replace("bearer", "").trim();
-            service.revokeToken(tokenValue);
-            logger.debug("revoked oauth2 token " + tokenValue);
+            //this is only for some bean-creation timing issue (do not autowire DefaultTokenServices it will fail)
+            final Map<String, DefaultTokenServices> serivces = context.getBeansOfType(DefaultTokenServices.class);
+            if (!serivces.isEmpty()) {
+                final DefaultTokenServices service = serivces.values().iterator().next();
+                service.revokeToken(tokenValue);
+                logger.debug("revoked oauth2 token " + tokenValue);
 
-            SecurityContext context = SecurityContextHolder.getContext();
-            Authentication auth = context.getAuthentication();
+                SecurityContext context = SecurityContextHolder.getContext();
+                Authentication auth = context.getAuthentication();
 
-            if (auth instanceof OAuth2Authentication) {
-                SessionListener.invalidateSessionOfAuthentication(((OAuth2Authentication) auth).getUserAuthentication());
+                if (auth instanceof OAuth2Authentication) {
+                    SessionListener.invalidateSessionOfAuthentication(((OAuth2Authentication) auth).getUserAuthentication());
+                } else {
+                    SessionListener.invalidateSessionOfAuthentication(auth);
+                }
+
+                securityLogoutHandler.logout(request, response, auth);
+                cookieLogoutHandler.logout(request, response, auth);
             } else {
-                SessionListener.invalidateSessionOfAuthentication(auth);
+                logger.error("DefaultTokenServices not found");
             }
-
-            securityLogoutHandler.logout(request, response, auth);
-            cookieLogoutHandler.logout(request, response, auth);
-
         }
     }
 
